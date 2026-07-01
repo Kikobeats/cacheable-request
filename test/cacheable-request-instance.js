@@ -6,6 +6,7 @@ const stream = require('node:stream')
 const url = require('node:url')
 const createTestServer = require('create-test-server')
 const getStream = require('get-stream')
+const Keyv = require('keyv')
 const CacheableRequest = require('../src')
 const { PassThrough } = stream
 
@@ -85,6 +86,20 @@ test('cacheableRequest emits response event for cached responses', () => {
         })
     })
   }).on('request', request_ => request_.end())
+})
+test('cacheableRequest does not hang for a Keyv-compatible store without EventEmitter (e.g. @keyvhq/core)', done => {
+  // @keyvhq/core passes `instanceof Keyv` but does not extend EventEmitter, so
+  // `cache.on` is undefined. Calling it threw an unhandled rejection that never
+  // rejected the returned emitter, hanging the request until timeout.
+  const cache = new Keyv()
+  cache.on = undefined
+  const cacheableRequest = CacheableRequest(request, cache)
+  cacheableRequest(url.parse(s.url), response_ => {
+    expect(response_.statusCode).toBe(200)
+    done()
+  })
+    .on('error', done)
+    .on('request', request_ => request_.end())
 })
 test('cacheableRequest emits CacheError if cache adapter connection errors', done => {
   const cacheableRequest = CacheableRequest(
