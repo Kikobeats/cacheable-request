@@ -102,16 +102,17 @@ test('cacheableRequest does not hang for a Keyv-compatible store without EventEm
     .on('request', request_ => request_.end())
 })
 test('cacheableRequest emits CacheError if cache adapter connection errors', done => {
-  const cacheableRequest = CacheableRequest(
-    request,
-    'sqlite://non/existent/database.sqlite'
-  )
+  const errorMessage = 'Connection error'
+  const cache = {
+    get: () => Promise.reject(new Error(errorMessage)),
+    set () {},
+    delete () {}
+  }
+  const cacheableRequest = CacheableRequest(request, cache)
   cacheableRequest(url.parse(s.url))
     .on('error', error => {
       expect(error instanceof CacheableRequest.CacheError).toBeTruthy()
-      if (error.code === 'SQLITE_CANTOPEN') {
-        expect(error.code).toBe('SQLITE_CANTOPEN')
-      }
+      expect(error.message).toBe(errorMessage)
       done()
     })
     .on('request', request_ => request_.end())
@@ -254,10 +255,12 @@ test('cacheableRequest does not cache response if request is aborted after recei
   })
 })
 test('cacheableRequest makes request even if initial DB connection fails (when opts.automaticFailover is enabled)', async () => {
-  const cacheableRequest = CacheableRequest(
-    request,
-    'sqlite://non/existent/database.sqlite'
-  )
+  const cache = {
+    get: () => Promise.reject(new Error('Connection error')),
+    set () {},
+    delete () {}
+  }
+  const cacheableRequest = CacheableRequest(request, cache)
   const options = url.parse(s.url)
   options.automaticFailover = true
   cacheableRequest(options, response_ => {
