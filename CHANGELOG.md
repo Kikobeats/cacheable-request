@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [7.0.6](https://github.com/@kikobeats/cacheable-request/compare/v7.0.5...v7.0.6) (2026-07-02)
+
+
+### Bug Fixes
+
+* tolerate Keyv stores without an EventEmitter interface ([b54afb2](https://github.com/@kikobeats/cacheable-request/commit/b54afb2b1f8d119eeb4ac92a6c862cf99320ee80))
+
 ### [7.0.5](https://github.com/@kikobeats/cacheable-request/compare/v7.0.4...v7.0.5) (2024-05-11)
 
 

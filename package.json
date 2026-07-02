@@ -2,7 +2,7 @@
   "name": "@kikobeats/cacheable-request",
   "description": "Wrap native HTTP requests with RFC compliant cache support",
   "homepage": "https://github.com/@kikobeats/cacheable-request#readme",
-  "version": "7.0.5",
+  "version": "7.0.6",
   "main": "src/index.js",
   "author": {
     "email": "josefrancisco.verdu@gmail.com",
