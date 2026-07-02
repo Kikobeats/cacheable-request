@@ -171,7 +171,7 @@ function createCacheableRequest (request, cache) {
         }
       }
 
-      if (cache instanceof Keyv) {
+      if (cache instanceof Keyv && typeof cache.on === 'function') {
         const errorHandler = (error) => ee.emit('error', new CacheableRequest.CacheError(error))
         const removeListener = () => cache.removeListener('error', errorHandler)
         ;(['error', 'response']).forEach(event => cache.on(event, removeListener))

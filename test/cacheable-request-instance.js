@@ -6,6 +6,7 @@ const stream = require('node:stream')
 const url = require('node:url')
 const createTestServer = require('create-test-server')
 const getStream = require('get-stream')
+const Keyv = require('keyv')
 const CacheableRequest = require('../src')
 const { PassThrough } = stream
 
@@ -86,17 +87,32 @@ test('cacheableRequest emits response event for cached responses', () => {
     })
   }).on('request', request_ => request_.end())
 })
+test('cacheableRequest does not hang for a Keyv-compatible store without EventEmitter (e.g. @keyvhq/core)', done => {
+  // @keyvhq/core passes `instanceof Keyv` but does not extend EventEmitter, so
+  // `cache.on` is undefined. Calling it threw an unhandled rejection that never
+  // rejected the returned emitter, hanging the request until timeout.
+  const cache = new Keyv()
+  cache.on = undefined
+  const cacheableRequest = CacheableRequest(request, cache)
+  cacheableRequest(url.parse(s.url), response_ => {
+    expect(response_.statusCode).toBe(200)
+    done()
+  })
+    .on('error', done)
+    .on('request', request_ => request_.end())
+})
 test('cacheableRequest emits CacheError if cache adapter connection errors', done => {
-  const cacheableRequest = CacheableRequest(
-    request,
-    'sqlite://non/existent/database.sqlite'
-  )
+  const errorMessage = 'Connection error'
+  const cache = {
+    get: () => Promise.reject(new Error(errorMessage)),
+    set () {},
+    delete () {}
+  }
+  const cacheableRequest = CacheableRequest(request, cache)
   cacheableRequest(url.parse(s.url))
     .on('error', error => {
       expect(error instanceof CacheableRequest.CacheError).toBeTruthy()
-      if (error.code === 'SQLITE_CANTOPEN') {
-        expect(error.code).toBe('SQLITE_CANTOPEN')
-      }
+      expect(error.message).toBe(errorMessage)
       done()
     })
     .on('request', request_ => request_.end())
@@ -239,10 +255,12 @@ test('cacheableRequest does not cache response if request is aborted after recei
   })
 })
 test('cacheableRequest makes request even if initial DB connection fails (when opts.automaticFailover is enabled)', async () => {
-  const cacheableRequest = CacheableRequest(
-    request,
-    'sqlite://non/existent/database.sqlite'
-  )
+  const cache = {
+    get: () => Promise.reject(new Error('Connection error')),
+    set () {},
+    delete () {}
+  }
+  const cacheableRequest = CacheableRequest(request, cache)
   const options = url.parse(s.url)
   options.automaticFailover = true
   cacheableRequest(options, response_ => {

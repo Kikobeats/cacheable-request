@@ -37,12 +37,10 @@
     "responselike": "^2.0.0"
   },
   "devDependencies": {
-    "@keyv/sqlite": "latest",
     "c8": "latest",
     "create-test-server": "latest",
     "get-stream": "5",
     "jest": "latest",
-    "sqlite3": "latest",
     "standard": "latest"
   },
   "jest": {

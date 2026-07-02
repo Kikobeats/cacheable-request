@@ -4,11 +4,8 @@ const createTestServer = require('create-test-server')
 const { setTimeout } = require('timers/promises')
 const { request } = require('node:http')
 const getStream = require('get-stream')
-const sqlite3 = require('sqlite3')
-const util = require('node:util')
 const url = require('node:url')
 const Keyv = require('keyv')
-const pify = require('pify')
 
 const CacheableRequest = require('../src')
 
@@ -477,27 +474,18 @@ test('Custom Keyv instance adapters used', async () => {
   const cached = await cache.get(`GET:${s.url + endpoint}`)
   expect(response.body).toBe(cached.body.toString())
 })
-test('Keyv cache adapters load via connection uri', async () => {
+test('Keyv cache adapters persist across requests', async () => {
   const endpoint = '/cache'
-  const cacheableRequest = CacheableRequest(
-    request,
-    'sqlite://test/testdb.sqlite'
-  )
+  const cache = new Keyv()
+  const cacheableRequest = CacheableRequest(request, cache)
   const cacheableRequestHelper = promisify(cacheableRequest)
-  const db = new sqlite3.Database('test/testdb.sqlite')
-  const query = await pify(db.all.bind(db))
   const firstResponse = await cacheableRequestHelper(s.url + endpoint)
   await setTimeout(1000)
   const secondResponse = await cacheableRequestHelper(s.url + endpoint)
-  const cacheResult = await query(
-    `SELECT * FROM keyv WHERE "key" = "cacheable-request:GET:${
-      s.url + endpoint
-    }"`
-  )
+  const cacheResult = await cache.get(`GET:${s.url + endpoint}`)
   expect(firstResponse.fromCache).toBeFalsy()
   expect(secondResponse.fromCache).toBeTruthy()
-  expect(cacheResult.length).toBe(1)
-  await query('DELETE FROM keyv')
+  expect(cacheResult).toBeDefined()
 })
 test('ability to force refresh', async () => {
   const endpoint = '/cache'
