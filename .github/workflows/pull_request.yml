@@ -36,3 +36,49 @@ jobs:
       #   uses: coverallsapp/github-action@main
       #   with:
       #     github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  release:
+    name: Release
+    if: github.event_name == 'push'
+    needs: [test]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          registry-url: https://registry.npmjs.org
+      - name: Read the version
+        id: version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          if npm view "@kikobeats/cacheable-request@$VERSION" version > /dev/null 2>&1; then
+            echo "@kikobeats/cacheable-request@$VERSION is already published"
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Setup PNPM
+        if: steps.version.outputs.publish == 'true'
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+          run_install: true
+      - name: Publish
+        if: steps.version.outputs.publish == 'true'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access=public
+      - name: Tag and release
+        if: steps.version.outputs.publish == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          git tag "v$VERSION"
+          git push origin "v$VERSION"
+          gh release create "v$VERSION" --title "v$VERSION" --generate-notes
