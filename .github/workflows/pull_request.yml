@@ -8,12 +8,13 @@ on:
     branches:
       - master
 
-env:
-  pnpm_config_dangerously_allow_all_builds: true
+permissions: {}
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -47,20 +48,37 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
           registry-url: https://registry.npmjs.org
-      - name: Read the version
+      - name: Check published artifacts
         id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           VERSION=$(node -p "require('./package.json').version")
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
           if npm view "@kikobeats/cacheable-request@$VERSION" version > /dev/null 2>&1; then
             echo "@kikobeats/cacheable-request@$VERSION is already published"
           else
             echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
+
+          if git ls-remote --exit-code origin "refs/tags/v$VERSION" > /dev/null 2>&1; then
+            echo "tag v$VERSION already exists"
+          else
+            echo "tag=true" >> "$GITHUB_OUTPUT"
+          fi
+
+          if gh release view "v$VERSION" > /dev/null 2>&1; then
+            echo "GitHub release v$VERSION already exists"
+          else
+            echo "release=true" >> "$GITHUB_OUTPUT"
           fi
       - name: Setup PNPM
         if: steps.version.outputs.publish == 'true'
@@ -73,12 +91,18 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish --access=public
-      - name: Tag and release
-        if: steps.version.outputs.publish == 'true'
+      - name: Tag
+        if: steps.version.outputs.tag == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.version.outputs.version }}
         run: |
+          gh auth setup-git
           git tag "v$VERSION"
           git push origin "v$VERSION"
-          gh release create "v$VERSION" --title "v$VERSION" --generate-notes
+      - name: GitHub release
+        if: steps.version.outputs.release == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: gh release create "v$VERSION" --title "v$VERSION" --generate-notes
