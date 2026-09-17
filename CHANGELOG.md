@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [7.0.7](https://github.com/@kikobeats/cacheable-request/compare/v7.0.6...v7.0.7) (2026-09-17)
+
+
+### Bug Fixes
+
+* ship the bundled clone-response instead of building it on install ([8dd95ae](https://github.com/@kikobeats/cacheable-request/commit/8dd95ae4564fb344d58ef4cfb385f2d0b22fc3c8))
+
 ### [7.0.6](https://github.com/@kikobeats/cacheable-request/compare/v7.0.5...v7.0.6) (2026-07-02)
 
 
