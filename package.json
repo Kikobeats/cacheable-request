@@ -38,7 +38,7 @@
   "devDependencies": {
     "c8": "latest",
     "create-test-server": "latest",
-    "esbuild": "~0.21.1",
+    "esbuild": "~0.28.2",
     "get-stream": "5",
     "jest": "latest",
     "standard": "latest"
