@@ -2,7 +2,7 @@
   "name": "@kikobeats/cacheable-request",
   "description": "Wrap native HTTP requests with RFC compliant cache support",
   "homepage": "https://github.com/@kikobeats/cacheable-request#readme",
-  "version": "7.0.6",
+  "version": "7.0.7",
   "main": "src/index.js",
   "author": {
     "email": "josefrancisco.verdu@gmail.com",
@@ -30,7 +30,6 @@
   ],
   "dependencies": {
     "clone-response": "^2.0.0",
-    "esbuild": "~0.21.1",
     "http-cache-semantics": "^4.1.1",
     "keyv": "^4.5.4",
     "normalize-url": "^6.0.3",
@@ -39,6 +38,7 @@
   "devDependencies": {
     "c8": "latest",
     "create-test-server": "latest",
+    "esbuild": "~0.21.1",
     "get-stream": "5",
     "jest": "latest",
     "standard": "latest"
@@ -56,10 +56,13 @@
     "node": ">=18"
   },
   "files": [
-    "src/index.js"
+    "src/index.js",
+    "src/clone-response.js"
   ],
   "scripts": {
-    "postinstall": "[ -f src/clone-response.js ] || echo \"export { default as cloneResponse } from 'clone-response'\" | esbuild --bundle --target=ES2019 --format=cjs --platform=node > src/clone-response.js",
+    "build": "echo \"export { default as cloneResponse } from 'clone-response'\" | esbuild --bundle --target=ES2019 --format=cjs --platform=node > src/clone-response.js",
+    "prepack": "npm run build",
+    "pretest": "npm run build",
     "test": "c8 jest"
   },
   "license": "MIT"
