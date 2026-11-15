@@ -44,7 +44,7 @@
     "standard": "latest"
   },
   "engines": {
-    "node": "24"
+    "node": ">=20.19 <21 || >=22.12"
   },
   "files": [
     "src/index.js",
