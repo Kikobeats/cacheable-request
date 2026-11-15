@@ -1,7 +1,7 @@
 'use strict'
 
 const CachePolicy = require('http-cache-semantics')
-const normalizeUrl = require('normalize-url')
+const normalizeUrl = require('normalize-url').default
 const EventEmitter = require('node:events')
 const Response = require('responselike')
 const crypto = require('node:crypto')
