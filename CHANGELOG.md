@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [7.0.8](https://github.com/@kikobeats/cacheable-request/compare/v7.0.7...v7.0.8) (2026-11-15)
+
+
+### Bug Fixes
+
+* keep cache keys on normalize-url 9 ([07b9595](https://github.com/@kikobeats/cacheable-request/commit/07b95954e9ebc91416f37fcad62e4f568f0aa4fb))
+
 ### [7.0.7](https://github.com/@kikobeats/cacheable-request/compare/v7.0.6...v7.0.7) (2026-09-17)
 
 
