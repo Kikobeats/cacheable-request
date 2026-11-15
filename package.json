@@ -43,15 +43,6 @@
     "jest": "latest",
     "standard": "latest"
   },
-  "jest": {
-    "moduleFileExtensions": [
-      "js"
-    ],
-    "testMatch": [
-      "**/test/**/*.js"
-    ],
-    "testEnvironment": "node"
-  },
   "engines": {
     "node": ">=20.19 <21 || >=22.12"
   },
