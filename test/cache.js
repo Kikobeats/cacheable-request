@@ -146,13 +146,13 @@ const testCacheKey = async (input, expected) => {
   const okMessage = `OK ${expectKey}`
   const cache = {
     get (key) {
-      expect(key).toBe(expectKey)
+      if (key !== expectKey) throw new Error(`cache key ${key} !== ${expectKey}`)
       throw new Error(okMessage)
     }
   }
   const cacheableRequest = CacheableRequest(request, cache)
   const cacheableRequestHelper = promisify(cacheableRequest)
-  await expect(cacheableRequestHelper(input)).rejects.toThrow()
+  await expect(cacheableRequestHelper(input)).rejects.toThrow(okMessage)
 }
 
 test('return with GET', async () =>

@@ -216,7 +216,7 @@ function normalizeUrlObject (url) {
   // - hostname or host may be set
   // - host shall not have port encoded
   return {
-    protocol: url.protocol,
+    protocol: url.protocol || 'http:',
     auth: url.auth,
     hostname: url.hostname || url.host || 'localhost',
     port: url.port,
