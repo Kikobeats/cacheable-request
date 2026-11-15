@@ -167,6 +167,30 @@ test('keeps trailing /', async () =>
     'GET:http://www.example.com/test/'
   ))
 
+test('keeps a tilde in the path', async () =>
+  testCacheKey('http://example.com/~user', 'GET:http://example.com/~user'))
+
+test('percent-encodes a tilde in the query', async () =>
+  testCacheKey(
+    'http://example.com/?q=~user',
+    'GET:http://example.com/?q=%7Euser'
+  ))
+
+test('keeps a percent-encoded tilde in the query', async () =>
+  testCacheKey(
+    'http://example.com/?q=%7Euser',
+    'GET:http://example.com/?q=%7Euser'
+  ))
+
+test('a query flag is an empty value in the cache key', async () =>
+  testCacheKey('http://example.com/?flag', 'GET:http://example.com/?flag='))
+
+test('keeps a percent-encoded ampersand in the query', async () =>
+  testCacheKey(
+    'http://example.com/?q=a%26b',
+    'GET:http://example.com/?q=a%26b'
+  ))
+
 test('return with GET.', async () =>
   testCacheKey(
     new url.URL('http://www.example.com'),

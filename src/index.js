@@ -45,11 +45,7 @@ function createCacheableRequest (request, cache) {
     options = Object.assign(Object.assign({ headers: {}, method: 'GET', cache: true, strictTtl: false, automaticFailover: false }, options), urlObjectToRequestOptions(url))
     options.headers = Object.fromEntries(Object.entries(options.headers).map(([key, value]) => [key.toLowerCase(), value]))
     const ee = new EventEmitter()
-    const normalizedUrlString = normalizeUrl(urlLib.format(url), {
-      stripWWW: false,
-      removeTrailingSlash: false,
-      stripAuthentication: false
-    })
+    const normalizedUrlString = cacheKeyUrl(urlLib.format(url))
     let key = `${options.method}:${normalizedUrlString}`
     // POST, PATCH, and PUT requests may be cached, depending on the response
     // cache-control headers. As a result, the body of the request should be
@@ -196,6 +192,19 @@ function urlObjectToRequestOptions (url) {
   delete options.pathname
   delete options.search
   return options
+}
+
+function cacheKeyUrl (urlString) {
+  const normalized = normalizeUrl(urlString, {
+    stripWWW: false,
+    removeTrailingSlash: false,
+    stripAuthentication: false,
+    emptyQueryValue: 'always'
+  })
+  const queryAt = normalized.indexOf('?')
+  if (queryAt === -1) return normalized
+  // normalize-url 9 decodes "~" in the query. 6 stored it as "%7E".
+  return normalized.slice(0, queryAt) + normalized.slice(queryAt).replaceAll('~', '%7E')
 }
 
 function normalizeUrlObject (url) {
