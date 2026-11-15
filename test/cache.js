@@ -191,6 +191,24 @@ test('keeps a percent-encoded ampersand in the query', async () =>
     'GET:http://example.com/?q=a%26b'
   ))
 
+test('passes an ftp query through in its original order', async () =>
+  testCacheKey(
+    'ftp://example.com/a?b=1&a=2',
+    'GET:ftp://example.com/a?b=1&a=2'
+  ))
+
+test('passes a mailto URL through', async () =>
+  testCacheKey(
+    'mailto:user@example.com',
+    'GET:mailto:user@example.com'
+  ))
+
+test('passes a custom protocol through', async () =>
+  testCacheKey(
+    'custom://example.com/a',
+    'GET:custom:example.com/a'
+  ))
+
 test('return with GET.', async () =>
   testCacheKey(
     new url.URL('http://www.example.com'),
