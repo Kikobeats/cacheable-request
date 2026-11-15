@@ -1,7 +1,7 @@
 'use strict'
 
 const CachePolicy = require('http-cache-semantics')
-const normalizeUrl = require('normalize-url')
+const normalizeUrl = require('normalize-url').default
 const EventEmitter = require('node:events')
 const Response = require('responselike')
 const crypto = require('node:crypto')
@@ -45,11 +45,7 @@ function createCacheableRequest (request, cache) {
     options = Object.assign(Object.assign({ headers: {}, method: 'GET', cache: true, strictTtl: false, automaticFailover: false }, options), urlObjectToRequestOptions(url))
     options.headers = Object.fromEntries(Object.entries(options.headers).map(([key, value]) => [key.toLowerCase(), value]))
     const ee = new EventEmitter()
-    const normalizedUrlString = normalizeUrl(urlLib.format(url), {
-      stripWWW: false,
-      removeTrailingSlash: false,
-      stripAuthentication: false
-    })
+    const normalizedUrlString = cacheKeyUrl(urlLib.format(url))
     let key = `${options.method}:${normalizedUrlString}`
     // POST, PATCH, and PUT requests may be cached, depending on the response
     // cache-control headers. As a result, the body of the request should be
@@ -198,6 +194,23 @@ function urlObjectToRequestOptions (url) {
   return options
 }
 
+function cacheKeyUrl (urlString) {
+  const normalized = normalizeUrl(urlString, {
+    stripWWW: false,
+    removeTrailingSlash: false,
+    stripAuthentication: false,
+    emptyQueryValue: 'always',
+    // Sorting in normalize-url 9 decodes the query, and the URL setter then
+    // drops %09, %0A, and %0D, so those keys collide with the letters beside them.
+    sortQueryParameters: false
+  })
+  const queryAt = normalized.indexOf('?')
+  if (queryAt === -1) return normalized
+  const params = new urlLib.URLSearchParams(normalized.slice(queryAt + 1))
+  params.sort()
+  return `${normalized.slice(0, queryAt)}?${params.toString()}`
+}
+
 function normalizeUrlObject (url) {
   // If url was parsed by url.parse or new URL:
   // - hostname will be set
@@ -207,7 +220,7 @@ function normalizeUrlObject (url) {
   // - hostname or host may be set
   // - host shall not have port encoded
   return {
-    protocol: url.protocol,
+    protocol: url.protocol || 'http:',
     auth: url.auth,
     hostname: url.hostname || url.host || 'localhost',
     port: url.port,

@@ -32,7 +32,7 @@
     "clone-response": "^2.0.0",
     "http-cache-semantics": "^4.1.1",
     "keyv": "^4.5.4",
-    "normalize-url": "^6.0.3",
+    "normalize-url": "~9.0.1",
     "responselike": "^2.0.0"
   },
   "devDependencies": {
@@ -43,17 +43,8 @@
     "jest": "latest",
     "standard": "latest"
   },
-  "jest": {
-    "moduleFileExtensions": [
-      "js"
-    ],
-    "testMatch": [
-      "**/test/**/*.js"
-    ],
-    "testEnvironment": "node"
-  },
   "engines": {
-    "node": ">=18"
+    "node": ">=20.19 <21 || >=22.12"
   },
   "files": [
     "src/index.js",
@@ -63,7 +54,7 @@
     "build": "echo \"export { default as cloneResponse } from 'clone-response'\" | esbuild --bundle --target=ES2019 --format=cjs --platform=node > src/clone-response.js",
     "prepack": "npm run build",
     "pretest": "npm run build",
-    "test": "c8 jest"
+    "test": "NODE_OPTIONS=--experimental-vm-modules c8 jest"
   },
   "license": "MIT"
 }
