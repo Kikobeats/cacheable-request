@@ -199,12 +199,16 @@ function cacheKeyUrl (urlString) {
     stripWWW: false,
     removeTrailingSlash: false,
     stripAuthentication: false,
-    emptyQueryValue: 'always'
+    emptyQueryValue: 'always',
+    // Sorting in normalize-url 9 decodes the query, and the URL setter then
+    // drops %09, %0A, and %0D, so those keys collide with the letters beside them.
+    sortQueryParameters: false
   })
   const queryAt = normalized.indexOf('?')
   if (queryAt === -1) return normalized
-  // normalize-url 9 decodes "~" in the query. 6 stored it as "%7E".
-  return normalized.slice(0, queryAt) + normalized.slice(queryAt).replaceAll('~', '%7E')
+  const params = new urlLib.URLSearchParams(normalized.slice(queryAt + 1))
+  params.sort()
+  return `${normalized.slice(0, queryAt)}?${params.toString()}`
 }
 
 function normalizeUrlObject (url) {

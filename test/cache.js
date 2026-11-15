@@ -191,10 +191,34 @@ test('keeps a percent-encoded ampersand in the query', async () =>
     'GET:http://example.com/?q=a%26b'
   ))
 
-test('passes an ftp query through in its original order', async () =>
+test('percent-encodes a slash in the query', async () =>
+  testCacheKey(
+    'http://example.com/?q=a/b',
+    'GET:http://example.com/?q=a%2Fb'
+  ))
+
+test('keeps a percent-encoded newline in the query', async () =>
+  testCacheKey(
+    'http://example.com/?q=a%0Ab',
+    'GET:http://example.com/?q=a%0Ab'
+  ))
+
+test('sorts query parameters', async () =>
+  testCacheKey(
+    'http://example.com/?b=1&a=2',
+    'GET:http://example.com/?a=2&b=1'
+  ))
+
+test('drops a query that is only tracking parameters', async () =>
+  testCacheKey(
+    'http://example.com/?utm_source=x',
+    'GET:http://example.com'
+  ))
+
+test('sorts an ftp query', async () =>
   testCacheKey(
     'ftp://example.com/a?b=1&a=2',
-    'GET:ftp://example.com/a?b=1&a=2'
+    'GET:ftp://example.com/a?a=2&b=1'
   ))
 
 test('passes a mailto URL through', async () =>
